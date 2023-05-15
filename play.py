@@ -1,5 +1,6 @@
 from snake import SnakeEnv
 import pygame as pg
+from pygame.surfarray import array3d
 
 snakeEnv = SnakeEnv(600, 600)
 difficulty = 10
@@ -15,26 +16,35 @@ while True:
     for event in pg.event.get():
         snakeEnv.action = snakeEnv.human_step(event)
 
-    #check Direction
+    # check Direction
     snakeEnv.direction = snakeEnv.changeDirection(snakeEnv.action, snakeEnv.direction)
     snakeEnv.snake_position = snakeEnv.move(snakeEnv.direction, snakeEnv.snake_position)
 
-    #Check if we at food
+    # Check if we at food
     snakeEnv.snake_body.insert(0, list(snakeEnv.snake_position))
     if snakeEnv.eat():
-        snakeEnv.score +=1
+        snakeEnv.score += 1
         snakeEnv.food_spawn = False
     else:
         snakeEnv.snake_body.pop()
 
-    #Check if spawn new food
+    # Check if spawn new food
     if not snakeEnv.food_spawn:
         snakeEnv.food_position = snakeEnv.spawn_food()
     snakeEnv.food_spawn = True
 
-    #Drawing the snake
+    # Drawing the snake
     snakeEnv.game_window.fill(black)
     for position in snakeEnv.snake_body:
         pg.draw.rect(snakeEnv.game_window, green, pg.Rect(position[0], position[1], 10, 10))
 
+    # Drawing the food
+    pg.draw.rect(snakeEnv.game_window, white, pg.Rect(snakeEnv.food_position[0], snakeEnv.food_position[1], 10, 10))
 
+    # Check if end game
+    snakeEnv.gameOver()
+
+    snakeEnv.scoreKeeper(white, 'consolas', 20)
+    pg.display.update()
+    fps.tick(difficulty)
+    img = array3d(snakeEnv.game_window)
