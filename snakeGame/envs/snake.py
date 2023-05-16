@@ -1,5 +1,6 @@
 import pygame as pg
 import sys, time, random
+from pygame.surfarray import array3d
 
 black = pg.Color(0, 0, 0)
 green = pg.Color(0, 255, 0)
@@ -76,7 +77,6 @@ class SnakeEnv():
         elif event.type == pg.KEYDOWN:
             if event.key == pg.K_UP:
                 action = 'up'
-                print('UP')
             if event.key == pg.K_DOWN:
                 action = 'down'
             if event.key == pg.K_LEFT:
@@ -118,3 +118,48 @@ class SnakeEnv():
         time.sleep(3)
         pg.quit()
         sys.exit()
+
+
+snakeEnv = SnakeEnv(600, 600)
+difficulty = 10
+fps = pg.time.Clock()
+check_errors = pg.init()
+pg.display.set_caption("Snake Game")
+
+while True:
+    for event in pg.event.get():
+        snakeEnv.action = snakeEnv.human_step(event)
+
+    # check Direction
+    snakeEnv.direction = snakeEnv.changeDirection(snakeEnv.action, snakeEnv.direction)
+    snakeEnv.snake_position = snakeEnv.move(snakeEnv.direction, snakeEnv.snake_position)
+
+    # Check if we at food
+    snakeEnv.snake_body.insert(0, list(snakeEnv.snake_position))
+    if snakeEnv.eat():
+        snakeEnv.score += 1
+        snakeEnv.food_spawn = False
+    else:
+        snakeEnv.snake_body.pop()
+
+    # Check if spawn new food
+    if not snakeEnv.food_spawn:
+        snakeEnv.food_position = snakeEnv.spawn_food()
+    snakeEnv.food_spawn = True
+
+    # Drawing the snake
+    snakeEnv.game_window.fill(black)
+    for position in snakeEnv.snake_body:
+        pg.draw.rect(snakeEnv.game_window, green, pg.Rect(position[0], position[1], 10, 10))
+
+    # Drawing the food
+    pg.draw.rect(snakeEnv.game_window, white, pg.Rect(snakeEnv.food_position[0], snakeEnv.food_position[1], 10, 10))
+
+    # Check if end game
+    snakeEnv.gameOver()
+
+    snakeEnv.scoreKeeper(white, 'consolas', 20)
+    pg.display.update()
+    fps.tick(difficulty)
+    img = array3d(snakeEnv.game_window)
+
